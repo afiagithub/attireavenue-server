@@ -28,6 +28,7 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
         const clothCollection = client.db('attireDB').collection('clothes');
+        const userCollection = client.db('attireDB').collection('users');
 
         app.get("/all-clothes", async (req, res) => {
             const page = parseInt(req.query.page);
@@ -42,6 +43,25 @@ async function run() {
         app.get("/product-count", async (req, res) => {
             const count = await clothCollection.estimatedDocumentCount()
             res.send({ count })
+        })
+
+        app.post("/users", async (req, res) => {
+            const data = req.body;
+            const {email} = data;
+            const isExists = await userCollection.findOne({email: email});
+            if(isExists){
+                return res.json({
+                    success: false
+                })
+            }           
+            const result = await userCollection.insertOne(data);
+            res.send(result)
+        })
+
+        app.post("/product", async (req, res) => {
+            const data = req.body;         
+            const result = await clothCollection.insertOne(data);
+            res.send(result)
         })
 
 
