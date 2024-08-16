@@ -35,6 +35,7 @@ async function run() {
             const size = parseInt(req.query.size);
             const criteria = req.query.criteria;
             const cat = req.query.cat;
+            const brand = req.query.brand;
             // console.log(cat);
 
             if (!criteria && !cat) {
@@ -44,10 +45,22 @@ async function run() {
                     .toArray();
                 res.send(result)
             }
-            else if (cat && !criteria) {
-                console.log(cat);
+            else if ((cat || brand) && !criteria) {
+                let query = {};
+                console.log(brand);
 
-                const filteredData = await clothCollection.find({ category: cat })
+                if (cat != 'Category' && brand != 'Brand') {
+                    query = { category: cat, brand: brand }
+                }
+                else if (cat != 'Category' && brand == 'Brand') {
+                    query = { category: cat }
+                }
+                else {
+                    query = { brand: brand }
+                }
+                console.log(query);
+                
+                const filteredData = await clothCollection.find(query)
                     .skip(page * size)
                     .limit(size)
                     .toArray();
@@ -90,12 +103,24 @@ async function run() {
 
         app.get("/product-count", async (req, res) => {
             const cat = req.query.cat;
-            if (cat) {
-                const result = await clothCollection.find({ category: cat }).toArray()
+            const brand = req.query.brand;
+            let query = {};
+            // console.log(brand);            
+            if (cat || brand) {
+                if (cat != 'Category' && brand != 'Brand') {
+                    query = { category: cat, brand: brand }
+                }
+                else if (cat != 'Category' && brand == 'Brand') {
+                    query = { category: cat }
+                }
+                else {
+                    query = { brand: brand }
+                }
+                const result = await clothCollection.find(query).toArray()
                 res.send({ count: result.length })
                 return;
             }
-            const count = await clothCollection.estimatedDocumentCount()            
+            const count = await clothCollection.estimatedDocumentCount()
             res.send({ count })
         })
 
