@@ -33,11 +33,49 @@ async function run() {
         app.get("/all-clothes", async (req, res) => {
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size);
-            const result = await clothCollection.find()
-                .skip(page * size)
-                .limit(size)
-                .toArray();
-            res.send(result)
+            const criteria = req.query.criteria;
+            // console.log(criteria);
+            
+            if (!criteria) {
+                const result = await clothCollection.find()
+                    .skip(page * size)
+                    .limit(size)
+                    .toArray();
+                res.send(result)
+            }
+            else if(criteria == 1){
+                const result = await clothCollection.aggregate(
+                    [
+                        { $sort: { price: 1 } }
+                    ]
+                )
+                    .skip(page * size)
+                    .limit(size)
+                    .toArray();
+                res.send(result)
+            }
+            else if(criteria == 2){
+                const result = await clothCollection.aggregate(
+                    [
+                        { $sort: { price: -1 } }
+                    ]
+                )
+                    .skip(page * size)
+                    .limit(size)
+                    .toArray();
+                res.send(result)
+            }
+            else if(criteria == 3){
+                const result = await clothCollection.aggregate(
+                    [
+                        { $sort: { product_creation_date: -1 } }
+                    ]
+                )
+                    .skip(page * size)
+                    .limit(size)
+                    .toArray();
+                res.send(result)
+            }
         })
 
         app.get("/product-count", async (req, res) => {
@@ -46,32 +84,47 @@ async function run() {
         })
 
         app.post("/product", async (req, res) => {
-            const data = req.body;         
+            const data = req.body;
             const result = await clothCollection.insertOne(data);
             res.send(result)
         })
 
-        app.get("/search-name", async(req, res) => {
+        app.get("/search-name", async (req, res) => {
             const name = req.query.name;
-            const result = await clothCollection.findOne({name: name});
-            if(!result){
+            const result = await clothCollection.findOne({ name: name });
+            if (!result) {
                 return res.json({
                     success: false,
                     message: 'No match found'
                 })
-            }            
+            }
             res.send([result])
         })
 
+        // app.get("/sort-cloth", async (req, res) => {
+
+        //     const page = parseInt(req.query.page);
+        //     const size = parseInt(req.query.size);
+        //     const result = await clothCollection.aggregate(
+        //         [
+        //             { $sort: { price: -1 } }
+        //         ]
+        //     )
+        //         .skip(page * size)
+        //         .limit(size)
+        //         .toArray();
+        //     res.send(result)
+        // })
+
         app.post("/users", async (req, res) => {
             const data = req.body;
-            const {email} = data;
-            const isExists = await userCollection.findOne({email: email});
-            if(isExists){
+            const { email } = data;
+            const isExists = await userCollection.findOne({ email: email });
+            if (isExists) {
                 return res.json({
                     success: false
                 })
-            }           
+            }
             const result = await userCollection.insertOne(data);
             res.send(result)
         })
