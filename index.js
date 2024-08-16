@@ -34,16 +34,26 @@ async function run() {
             const page = parseInt(req.query.page);
             const size = parseInt(req.query.size);
             const criteria = req.query.criteria;
-            // console.log(criteria);
-            
-            if (!criteria) {
+            const cat = req.query.cat;
+            // console.log(cat);
+
+            if (!criteria && !cat) {
                 const result = await clothCollection.find()
                     .skip(page * size)
                     .limit(size)
                     .toArray();
                 res.send(result)
             }
-            else if(criteria == 1){
+            else if (cat && !criteria) {
+                console.log(cat);
+
+                const filteredData = await clothCollection.find({ category: cat })
+                    .skip(page * size)
+                    .limit(size)
+                    .toArray();
+                res.send(filteredData)
+            }
+            else if (criteria == 1) {
                 const result = await clothCollection.aggregate(
                     [
                         { $sort: { price: 1 } }
@@ -54,7 +64,7 @@ async function run() {
                     .toArray();
                 res.send(result)
             }
-            else if(criteria == 2){
+            else if (criteria == 2) {
                 const result = await clothCollection.aggregate(
                     [
                         { $sort: { price: -1 } }
@@ -65,7 +75,7 @@ async function run() {
                     .toArray();
                 res.send(result)
             }
-            else if(criteria == 3){
+            else if (criteria == 3) {
                 const result = await clothCollection.aggregate(
                     [
                         { $sort: { product_creation_date: -1 } }
@@ -79,7 +89,13 @@ async function run() {
         })
 
         app.get("/product-count", async (req, res) => {
-            const count = await clothCollection.estimatedDocumentCount()
+            const cat = req.query.cat;
+            if (cat) {
+                const result = await clothCollection.find({ category: cat }).toArray()
+                res.send({ count: result.length })
+                return;
+            }
+            const count = await clothCollection.estimatedDocumentCount()            
             res.send({ count })
         })
 
@@ -100,21 +116,6 @@ async function run() {
             }
             res.send([result])
         })
-
-        // app.get("/sort-cloth", async (req, res) => {
-
-        //     const page = parseInt(req.query.page);
-        //     const size = parseInt(req.query.size);
-        //     const result = await clothCollection.aggregate(
-        //         [
-        //             { $sort: { price: -1 } }
-        //         ]
-        //     )
-        //         .skip(page * size)
-        //         .limit(size)
-        //         .toArray();
-        //     res.send(result)
-        // })
 
         app.post("/users", async (req, res) => {
             const data = req.body;
