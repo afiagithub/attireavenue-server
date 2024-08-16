@@ -36,7 +36,10 @@ async function run() {
             const criteria = req.query.criteria;
             const cat = req.query.cat;
             const brand = req.query.brand;
-            // console.log(cat);
+            const minPrice = Number(req.query.minPrice);
+            const maxPrice = Number(req.query.maxPrice);
+            // console.log(minPrice);
+
 
             if (!criteria && !cat) {
                 const result = await clothCollection.find()
@@ -47,19 +50,30 @@ async function run() {
             }
             else if ((cat || brand) && !criteria) {
                 let query = {};
-                console.log(brand);
 
-                if (cat != 'Category' && brand != 'Brand') {
+                if (cat != 'Category' && brand != 'Brand' && minPrice > 0 && maxPrice > 0) {
+                    query = { category: cat, brand: brand, price: { $gte: minPrice, $lte: maxPrice } }
+                }
+                else if (cat != 'Category' && brand == 'Brand' && minPrice > 0 && maxPrice > 0) {
+                    query = { category: cat, price: { $gte: minPrice, $lte: maxPrice } }
+                }
+                else if (cat == 'Category' && brand != 'Brand' && minPrice > 0 && maxPrice > 0) {
+                    query = { brand: brand, price: { $gte: minPrice, $lte: maxPrice } }
+                }
+                else if (cat == 'Category' && brand == 'Brand' && minPrice > 0 && maxPrice > 0) {
+                    query = { price: { $gte: minPrice, $lte: maxPrice } }
+                }
+                else if (cat != 'Category' && brand != 'Brand' && (minPrice <= 0 || maxPrice <= 0)) {
                     query = { category: cat, brand: brand }
                 }
-                else if (cat != 'Category' && brand == 'Brand') {
+                else if (cat != 'Category' && brand == 'Brand' && (minPrice <= 0 || maxPrice <= 0)) {
                     query = { category: cat }
                 }
-                else {
+                else if (cat == 'Category' && brand != 'Brand' && (minPrice <= 0 || maxPrice <= 0)) {
                     query = { brand: brand }
                 }
-                console.log(query);
-                
+                // console.log(query);
+
                 const filteredData = await clothCollection.find(query)
                     .skip(page * size)
                     .limit(size)
@@ -104,16 +118,30 @@ async function run() {
         app.get("/product-count", async (req, res) => {
             const cat = req.query.cat;
             const brand = req.query.brand;
+            const minPrice = Number(req.query.minPrice);
+            const maxPrice = Number(req.query.maxPrice);
             let query = {};
             // console.log(brand);            
             if (cat || brand) {
-                if (cat != 'Category' && brand != 'Brand') {
+                if (cat != 'Category' && brand != 'Brand' && minPrice > 0 && maxPrice > 0) {
+                    query = { category: cat, brand: brand, price: { $gte: minPrice, $lte: maxPrice } }
+                }
+                else if (cat != 'Category' && brand == 'Brand' && minPrice > 0 && maxPrice > 0) {
+                    query = { category: cat, price: { $gte: minPrice, $lte: maxPrice } }
+                }
+                else if (cat == 'Category' && brand != 'Brand' && minPrice > 0 && maxPrice > 0) {
+                    query = { brand: brand, price: { $gte: minPrice, $lte: maxPrice } }
+                }
+                else if (cat == 'Category' && brand == 'Brand' && minPrice > 0 && maxPrice > 0) {
+                    query = { price: { $gte: minPrice, $lte: maxPrice } }
+                }
+                else if (cat != 'Category' && brand != 'Brand' && (minPrice <= 0 || maxPrice <= 0)) {
                     query = { category: cat, brand: brand }
                 }
-                else if (cat != 'Category' && brand == 'Brand') {
+                else if (cat != 'Category' && brand == 'Brand' && (minPrice <= 0 || maxPrice <= 0)) {
                     query = { category: cat }
                 }
-                else {
+                else if (cat == 'Category' && brand != 'Brand' && (minPrice <= 0 || maxPrice <= 0)) {
                     query = { brand: brand }
                 }
                 const result = await clothCollection.find(query).toArray()
