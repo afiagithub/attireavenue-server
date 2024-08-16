@@ -45,6 +45,24 @@ async function run() {
             res.send({ count })
         })
 
+        app.post("/product", async (req, res) => {
+            const data = req.body;         
+            const result = await clothCollection.insertOne(data);
+            res.send(result)
+        })
+
+        app.get("/search-name", async(req, res) => {
+            const name = req.query.name;
+            const result = await clothCollection.findOne({name: name});
+            if(!result){
+                return res.json({
+                    success: false,
+                    message: 'No match found'
+                })
+            }            
+            res.send([result])
+        })
+
         app.post("/users", async (req, res) => {
             const data = req.body;
             const {email} = data;
@@ -58,15 +76,8 @@ async function run() {
             res.send(result)
         })
 
-        app.post("/product", async (req, res) => {
-            const data = req.body;         
-            const result = await clothCollection.insertOne(data);
-            res.send(result)
-        })
-
-
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
