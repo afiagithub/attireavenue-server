@@ -38,7 +38,6 @@ async function run() {
             const brand = req.query.brand;
             const minPrice = Number(req.query.minPrice);
             const maxPrice = Number(req.query.maxPrice);
-            // console.log(minPrice);
 
 
             if (!criteria && !cat) {
@@ -72,7 +71,6 @@ async function run() {
                 else if (cat == 'Category' && brand != 'Brand' && (minPrice <= 0 || maxPrice <= 0)) {
                     query = { brand: brand }
                 }
-                // console.log(query);
 
                 const filteredData = await clothCollection.find(query)
                     .skip(page * size)
@@ -120,8 +118,7 @@ async function run() {
             const brand = req.query.brand;
             const minPrice = Number(req.query.minPrice);
             const maxPrice = Number(req.query.maxPrice);
-            let query = {};
-            // console.log(brand);            
+            let query = {};            
             if (cat || brand) {
                 if (cat != 'Category' && brand != 'Brand' && minPrice > 0 && maxPrice > 0) {
                     query = { category: cat, brand: brand, price: { $gte: minPrice, $lte: maxPrice } }
